@@ -1,0 +1,11 @@
+{
+  "name": "publish-sh",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bin": {
+    "pb": "./bin/p.sh"
+  }
+}
