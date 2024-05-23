@@ -125,8 +125,9 @@ for element in "${needMergeArr[@]}"; do
   echo "$element" "$selected_parameter"
   if [ "$element" -eq "$selected_parameter" ]; then
     needMerge=true
+    exit 0
   else
-    
+    needMerge=false
   fi
 done
 
