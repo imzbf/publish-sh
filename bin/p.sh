@@ -87,11 +87,12 @@ git merge develop
 read_input() {
     local input
     while :; do
-        read -p "是否进入发布（非空）: " input
-        # 如果输入不为空，则退出循环
-        if [[ -n "$input" ]]; then
-            break
-        fi
+      clear
+      read -p "版本发布确认（非空）: " input
+      # 如果输入不为空，则退出循环
+      if [[ -n "$input" ]]; then
+          break
+      fi
     done
     # 返回有效输入
     echo "$input"
