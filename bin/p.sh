@@ -129,7 +129,7 @@ done
 
 echo $needMerge
 
-if [ $needMerge == true]; then
+if [ $needMerge == true ]; then
   git checkout develop
   echo "将${selected_parameter}合并回develop"
   git merge $selected_parameter
