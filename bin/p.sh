@@ -133,6 +133,7 @@ if [ $needMerge == true ]; then
   git checkout develop
   echo "将${selected_parameter}合并回develop"
   git merge $selected_parameter
+fi
 
 echo "推送"
 git push origin $version ${$selected_branch} develop
