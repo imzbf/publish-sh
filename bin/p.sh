@@ -79,7 +79,7 @@ git pull origin develop
 
 git checkout $selected_branch
 
-echo "拉取远程$selected_branch分支"
+echo "拉取远程${selected_branch}分支"
 git pull origin $selected_branch
 git merge develop
 
