@@ -122,14 +122,15 @@ echo "新的版本号：$version"
 needMergeArr=("patch" "minor" "major")
 needMerge=false
 for element in "${needMergeArr[@]}"; do
-  if [ "$element" == "$selected_parameter" ]; then
+  echo "$element" "$selected_parameter"
+  if [ "$element" -eq "$selected_parameter" ]; then
     needMerge=true
   fi
 done
 
 echo $needMerge
 
-if [ $needMerge == true]; then
+if [ $needMerge -eq true]; then
   git checkout develop
   echo "将${selected_parameter}合并回develop"
   git merge $selected_parameter
