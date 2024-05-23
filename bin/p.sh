@@ -73,6 +73,7 @@ while true; do
     fi
 done
 
+git checkout develop
 echo "拉取远程develop分支"
 git pull origin develop
 
@@ -107,10 +108,9 @@ options=(
     "preminor [$next_preminor]"
     "premajor [$next_premajor]"
     "prerelease [$next_prerelease]"
-    "退出"
 )
 
-select_option "${options[@]}"
+select_option "${options[@]}" "请选择发布的版本"
 
 selected_parameter=$(echo "$selected_option" | cut -d "[" -f 2 | cut -d "]" -f 1)
 
