@@ -8,7 +8,7 @@ select_option() {
   selectedIndex=0
 
   while true; do
-    # clear
+    clear
     echo ${args[$len-1]}
     for index in "${!choices[@]}"; do
       if [ $index -eq $selectedIndex ]; then
