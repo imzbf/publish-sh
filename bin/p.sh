@@ -2,12 +2,14 @@
 
 # 定义函数用于选择发布的版本
 select_option() {
-  choices=("$@")
+  args=("$@")
+  len=${#args[@]}
+  choices=("${args[@]:0:len-1}")
   selectedIndex=0
 
   while true; do
     clear
-    echo "选择发布的版本"
+    echo ${args[$len-1]}
     for index in "${!choices[@]}"; do
       if [ $index -eq $selectedIndex ]; then
         printf "\033[33m> ${choices[$index]}\e[0m\n"
@@ -42,6 +44,18 @@ select_option() {
   selected_option="${choices[$selectedIndex]}"
 }
 
+# 获取本地分支列表
+branches=$(git branch --format='%(refname:short)')
+
+# 转换分支列表为数组
+branch_options=($branches)
+
+# 调用选择函数选择分支
+select_option "${branch_options[@]}" "选择发布分支"
+
+# 获取选择的分支
+selected_branch="$selected_option"
+
 # 提交未提交的内容
 while true; do
     # 获取当前目录的Git状态
@@ -59,14 +73,13 @@ while true; do
     fi
 done
 
-
 echo "拉取远程develop分支"
 git pull origin develop
 
-git checkout main
+git checkout $selected_branch
 
 echo "拉取远程main分支"
-git pull origin main
+git pull origin $selected_branch
 git merge develop
 
 # brew install jq
