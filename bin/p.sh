@@ -2,12 +2,14 @@
 
 # 定义函数用于选择发布的版本
 select_option() {
-  choices=("$@")
+  args=("$@")
+  len=${#args[@]}
+  choices=("${args[@]:0:len-1}")
   selectedIndex=0
 
   while true; do
-    clear
-    echo "选择发布的版本"
+    # clear
+    echo ${args[$len-1]}
     for index in "${!choices[@]}"; do
       if [ $index -eq $selectedIndex ]; then
         printf "\033[33m> ${choices[$index]}\e[0m\n"
@@ -42,31 +44,44 @@ select_option() {
   selected_option="${choices[$selectedIndex]}"
 }
 
+# 获取本地分支列表
+branches=$(git branch --format='%(refname:short)')
+
+# 转换分支列表为数组
+branch_options=($branches)
+
+# 调用选择函数选择分支
+select_option "${branch_options[@]}" "选择发布分支"
+
+# 获取选择的分支
+selected_branch="$selected_option"
+
 # 提交未提交的内容
 while true; do
-    # 获取当前目录的Git状态
-    status=$(git status --porcelain)
+  # 获取当前目录的Git状态
+  status=$(git status --porcelain)
 
-    # 检查是否有未提交的文件或更改
-    if [ -n "$status" ]; then
-        echo "存在未提交的文件或更改："
-        echo "$status"
-        
-        git add .
-        git cz
-    else
-        break
-    fi
+  # 检查是否有未提交的文件或更改
+  if [ -n "$status" ]; then
+    echo "存在未提交的文件或更改："
+    echo "$status"
+    
+    git add .
+    git cz
+  else
+    break
+  fi
 done
 
-
+git checkout develop
 echo "拉取远程develop分支"
 git pull origin develop
 
-git checkout main
+git checkout $selected_branch
 
-echo "拉取远程main分支"
-git pull origin main
+echo "拉取远程${selected_branch}分支"
+git pull origin $selected_branch
+echo "合并develop分支"
 git merge develop
 
 # brew install jq
@@ -87,26 +102,39 @@ next_prerelease="$major.$minor.$patch-1"
 
 # 定义选项数组
 options=(
-    "patch [$next_patch]"
-    "minor [$next_minor]"
-    "major [$next_major]"
-    "prepatch [$next_prepatch]"
-    "preminor [$next_preminor]"
-    "premajor [$next_premajor]"
-    "prerelease [$next_prerelease]"
-    "退出"
+  "patch [$next_patch]"
+  "minor [$next_minor]"
+  "major [$next_major]"
+  "prepatch [$next_prepatch]"
+  "preminor [$next_preminor]"
+  "premajor [$next_premajor]"
+  "prerelease [$next_prerelease]"
 )
 
-select_option "${options[@]}"
+select_option "${options[@]}" "请选择发布的版本"
 
-selected_parameter=$(echo "$selected_option" | cut -d "[" -f 2 | cut -d "]" -f 1)
+selected_parameter=$(echo "$selected_option" | cut -d " " -f 1)
 
-echo "执行: npm version $selected_parameter"
+echo "执行: npm version ${selected_parameter}"
 version=$(npm version $selected_parameter)
 
 echo "新的版本号：$version"
 
+needMergeArr=("patch" "minor" "major")
+needMerge=false
+for element in "${needMergeArr[@]}"; do
+  if [ "$element" == "$selected_parameter" ]; then
+    needMerge=true
+  fi
+done
+
+if [ $needMerge == true ]; then
+  git checkout develop
+  echo "将${selected_branch}合并回develop"
+  git merge $selected_branch
+fi
+
 echo "推送"
-git push origin $version main develop
+git push origin $version $selected_branch develop
 
 echo "结束"
