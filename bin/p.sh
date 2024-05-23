@@ -112,7 +112,7 @@ options=(
 
 select_option "${options[@]}" "请选择发布的版本"
 
-selected_parameter=$(echo "$selected_option" | cut -d " " -f 1
+selected_parameter=$(echo "$selected_option" | cut -d " " -f 1)
 
 echo "执行: npm version ${selected_parameter}2"
 version=$(npm version $selected_parameter)
