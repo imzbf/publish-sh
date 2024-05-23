@@ -128,12 +128,11 @@ for element in "${needMergeArr[@]}"; do
   fi
 done
 
-echo $needMerge
-
 if [ $needMerge == true ]; then
   git checkout develop
   echo "将${selected_branch}合并回develop"
   git merge $selected_branch
+fi
 
 echo "推送"
 git push origin $version $selected_branch develop
