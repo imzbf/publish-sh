@@ -58,19 +58,19 @@ selected_branch="$selected_option"
 
 # 提交未提交的内容
 while true; do
-    # 获取当前目录的Git状态
-    status=$(git status --porcelain)
+  # 获取当前目录的Git状态
+  status=$(git status --porcelain)
 
-    # 检查是否有未提交的文件或更改
-    if [ -n "$status" ]; then
-        echo "存在未提交的文件或更改："
-        echo "$status"
-        
-        git add .
-        git cz
-    else
-        break
-    fi
+  # 检查是否有未提交的文件或更改
+  if [ -n "$status" ]; then
+    echo "存在未提交的文件或更改："
+    echo "$status"
+    
+    git add .
+    git cz
+  else
+    break
+  fi
 done
 
 git checkout develop
@@ -101,25 +101,39 @@ next_prerelease="$major.$minor.$patch-1"
 
 # 定义选项数组
 options=(
-    "patch [$next_patch]"
-    "minor [$next_minor]"
-    "major [$next_major]"
-    "prepatch [$next_prepatch]"
-    "preminor [$next_preminor]"
-    "premajor [$next_premajor]"
-    "prerelease [$next_prerelease]"
+  "patch [$next_patch]"
+  "minor [$next_minor]"
+  "major [$next_major]"
+  "prepatch [$next_prepatch]"
+  "preminor [$next_preminor]"
+  "premajor [$next_premajor]"
+  "prerelease [$next_prerelease]"
 )
 
 select_option "${options[@]}" "请选择发布的版本"
 
-selected_parameter=$(echo "$selected_option" | cut -d "[" -f 2 | cut -d "]" -f 1)
+selected_parameter=$(echo "$selected_option" | cut -d "[" -f 1 | cut -d "]" -f 1)
 
 echo "执行: npm version $selected_parameter"
 version=$(npm version $selected_parameter)
 
 echo "新的版本号：$version"
 
+needMergeArr=("patch" "minor" "major")
+needMerge=false
+for element in "${needMergeArr[@]}"; do
+  if [ "$element" == "$selected_parameter" ]; then
+    needMerge=true
+    exit 0
+  fi
+done
+
+if [ $needMerge == true]; then
+  git checkout develop
+  echo "将${selected_parameter}合并回develop"
+  git merge $selected_parameter
+
 echo "推送"
-git push origin $version main develop
+git push origin $version ${$selected_branch} develop
 
 echo "结束"
