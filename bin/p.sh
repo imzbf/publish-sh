@@ -126,8 +126,6 @@ for element in "${needMergeArr[@]}"; do
   if [ "$element" == "$selected_parameter" ]; then
     needMerge=true
     exit 0
-  else
-    needMerge=false
   fi
 done
 
