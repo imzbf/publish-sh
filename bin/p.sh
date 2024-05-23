@@ -81,6 +81,7 @@ git checkout $selected_branch
 
 echo "拉取远程${selected_branch}分支"
 git pull origin $selected_branch
+echo "合并develop分支"
 git merge develop
 
 # brew install jq
