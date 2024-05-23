@@ -84,6 +84,24 @@ git pull origin $selected_branch
 echo "合并develop分支"
 git merge develop
 
+read_input() {
+    local input
+    while :; do
+        read -p "是否进入发布（非空）: " input
+        # 如果输入不为空，则退出循环
+        if [[ -n "$input" ]]; then
+            break
+        fi
+    done
+    # 返回有效输入
+    echo "$input"
+}
+
+# 调用函数读取输入
+user_input=$(read_input)
+
+echo "您输入的内容为: $user_input"
+
 # brew install jq
 # 获取当前版本号
 current_version=$(jq -r '.version' package.json)
