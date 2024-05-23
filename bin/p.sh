@@ -123,7 +123,7 @@ needMergeArr=("patch" "minor" "major")
 needMerge=false
 for element in "${needMergeArr[@]}"; do
   echo "$element" "$selected_parameter"
-  if [ "$element" -eq "$selected_parameter" ]; then
+  if [ "$element" == "$selected_parameter" ]; then
     needMerge=true
     exit 0
   else
@@ -133,7 +133,7 @@ done
 
 echo $needMerge
 
-if [ $needMerge -eq true]; then
+if [ $needMerge == true]; then
   git checkout develop
   echo "将${selected_parameter}合并回develop"
   git merge $selected_parameter
