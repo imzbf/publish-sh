@@ -114,7 +114,7 @@ select_option "${options[@]}" "请选择发布的版本"
 
 selected_parameter=$(echo "$selected_option" | cut -d " " -f 1)
 
-echo "执行: npm version ${selected_parameter}2"
+echo "执行: npm version ${selected_parameter}"
 version=$(npm version $selected_parameter)
 
 echo "新的版本号：$version"
@@ -122,10 +122,8 @@ echo "新的版本号：$version"
 needMergeArr=("patch" "minor" "major")
 needMerge=false
 for element in "${needMergeArr[@]}"; do
-  echo "$element" "$selected_parameter" "$element" == "$selected_parameter"
   if [ "$element" == "$selected_parameter" ]; then
     needMerge=true
-    exit 0
   fi
 done
 
