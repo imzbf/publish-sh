@@ -8,6 +8,7 @@
 
 mac：`brew install jq`
 linux: `yum -y install jq`
+windows: https://jqlang.github.io/jq/
 
 ### 安装
 
