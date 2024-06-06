@@ -51,10 +51,13 @@ branches=$(git branch --format='%(refname:short)')
 branch_options=($branches)
 
 # 调用选择函数选择分支
-select_option "${branch_options[@]}" "选择发布分支"
+select_option "${branch_options[@]}" "选择开发分支"
+# 获取开发的分支
+develop_branch="$selected_option"
 
-# 获取选择的分支
-selected_branch="$selected_option"
+select_option "${branch_options[@]}" "选择发布分支"
+# 获取发布的分支
+publish_branch="$selected_option"
 
 # 提交未提交的内容
 while true; do
@@ -73,87 +76,115 @@ while true; do
   fi
 done
 
-git checkout develop
-echo "拉取远程develop分支"
-git pull origin develop
+git checkout $develop_branch
+echo "拉取远程 $develop_branch 分支"
+git pull origin $develop_branch
 
-git checkout $selected_branch
+git checkout $publish_branch
 
-echo "拉取远程${selected_branch}分支"
-git pull origin $selected_branch
-echo "合并develop分支"
-git merge develop
+echo "拉取远程${publish_branch}分支"
+git pull origin $publish_branch
+echo "合并 $develop_branch 分支"
+git merge $develop_branch
 
 read_input() {
     local input
     while :; do
-      clear
-      read -p "版本发布确认（非空）: " input
+      read -p "是否添加tag（y/n）: " input
       # 如果输入不为空，则退出循环
       if [[ -n "$input" ]]; then
           break
       fi
+
+      clear
     done
     # 返回有效输入
     echo "$input"
 }
 
 # 调用函数读取输入
-user_input=$(read_input)
+create_tag=$(read_input)
 
-echo "您输入的内容为: $user_input"
+if [ $create_tag != "n" ]; then
+  # 获取当前版本号
+  current_version=$(grep '"version"' package.json | sed -E 's/.*"version": "([^"]+)".*/\1/')
 
-# brew install jq
-# 获取当前版本号
-current_version=$(jq -r '.version' package.json)
+  # 分解版本号
+  IFS='.' read -r major minor patch <<< "$current_version"
 
-# 分解版本号
-IFS='.' read -r major minor patch <<< "$current_version"
+  # 计算新的版本号
+  next_patch="$major.$minor.$((patch + 1))"
+  next_minor="$major.$((minor + 1)).0"
+  next_major="$((major + 1)).0.0"
+  next_prepatch="$major.$minor.$((patch + 1))-0"
+  next_preminor="$major.$((minor + 1)).0-0"
+  next_premajor="$((major + 1)).0.0-0"
+  next_prerelease="$major.$minor.$patch-1"
 
-# 计算新的版本号
-next_patch="$major.$minor.$((patch + 1))"
-next_minor="$major.$((minor + 1)).0"
-next_major="$((major + 1)).0.0"
-next_prepatch="$major.$minor.$((patch + 1))-0"
-next_preminor="$major.$((minor + 1)).0-0"
-next_premajor="$((major + 1)).0.0-0"
-next_prerelease="$major.$minor.$patch-1"
+  # 定义选项数组
+  options=(
+    "patch [$next_patch]"
+    "minor [$next_minor]"
+    "major [$next_major]"
+    "prepatch [$next_prepatch]"
+    "preminor [$next_preminor]"
+    "premajor [$next_premajor]"
+    "prerelease [$next_prerelease]"
+  )
 
-# 定义选项数组
-options=(
-  "patch [$next_patch]"
-  "minor [$next_minor]"
-  "major [$next_major]"
-  "prepatch [$next_prepatch]"
-  "preminor [$next_preminor]"
-  "premajor [$next_premajor]"
-  "prerelease [$next_prerelease]"
-)
+  select_option "${options[@]}" "请选择发布的版本"
 
-select_option "${options[@]}" "请选择发布的版本"
+  selected_parameter=$(echo "$selected_option" | cut -d " " -f 1)
 
-selected_parameter=$(echo "$selected_option" | cut -d " " -f 1)
+  version=$(npm version $selected_parameter)
 
-echo "执行: npm version ${selected_parameter}"
-version=$(npm version $selected_parameter)
+  needMergeArr=("patch" "minor" "major")
+  needMerge=false
+  for element in "${needMergeArr[@]}"; do
+    if [ "$element" == "$selected_parameter" ]; then
+      needMerge=true
+    fi
+  done
 
-echo "新的版本号：$version"
+  git checkout $develop_branch
 
-needMergeArr=("patch" "minor" "major")
-needMerge=false
-for element in "${needMergeArr[@]}"; do
-  if [ "$element" == "$selected_parameter" ]; then
-    needMerge=true
+  if [ $needMerge == true ]; then
+    echo "将${publish_branch}合并回 $develop_branch "
+    git merge $publish_branch
   fi
-done
 
-if [ $needMerge == true ]; then
-  git checkout develop
-  echo "将${selected_branch}合并回develop"
-  git merge $selected_branch
+  options=(
+    "否"
+    "是"
+  )
+
+  select_option "${options[@]}" "是否推送tag"
+  push_tag="$selected_option"
+
+  echo "推送代码"
+  if [ $push_tag == "是" ]; then
+    git push origin $version $publish_branch $develop_branch
+  else
+    git push origin $publish_branch $develop_branch
+  fi
+else
+  git checkout $develop_branch
+
+  options=(
+    "否"
+    "是"
+  )
+
+  select_option "${options[@]}" "是否合回代码"
+  merge_back="$selected_option"
+
+  if [ $merge_back == "是" ]; then
+    echo "将${publish_branch}合并回 $develop_branch "
+    git merge $publish_branch
+  fi
+
+  echo "推送代码"
+  git push origin $publish_branch $develop_branch
 fi
-
-echo "推送"
-git push origin $version $selected_branch develop
 
 echo "结束"

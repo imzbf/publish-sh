@@ -1,16 +1,8 @@
 # publish-sh
 
-本地合并代码，构建tag并提交脚本。
+本地合并代码，构建 tag 并提交脚本。
 
 ## 使用
-
-### 安装依赖`jq`
-
-mac：`brew install jq`
-linux: `yum -y install jq`
-windows: https://jqlang.github.io/jq/
-
-### 安装
 
 方式一：下载代码，然后在项目内执行`npm link`
 方式二：`npm install https://github.com/imzbf/publish-sh.git -g`
