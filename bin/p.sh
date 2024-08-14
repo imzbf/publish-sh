@@ -109,8 +109,16 @@ if [ $create_tag != "n" ]; then
   # 获取当前版本号
   current_version=$(grep '"version"' package.json | sed -E 's/.*"version": "([^"]+)".*/\1/')
 
-  # 分解版本号
-  IFS='.' read -r major minor patch <<< "$current_version"
+  # 分解版本号，处理pre-release的情况
+  if [[ "$current_version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)-([0-9]+)$ ]]; then
+    major=${BASH_REMATCH[1]}
+    minor=${BASH_REMATCH[2]}
+    patch=${BASH_REMATCH[3]}
+    prerelease=${BASH_REMATCH[4]}
+  else
+    IFS='.' read -r major minor patch <<< "$current_version"
+    prerelease=""
+  fi
 
   # 计算新的版本号
   next_patch="$major.$minor.$((patch + 1))"
@@ -119,7 +127,13 @@ if [ $create_tag != "n" ]; then
   next_prepatch="$major.$minor.$((patch + 1))-0"
   next_preminor="$major.$((minor + 1)).0-0"
   next_premajor="$((major + 1)).0.0-0"
-  next_prerelease="$major.$minor.$patch-1"
+
+  # 根据是否是 pre-release 来决定如何生成下一个 prerelease 版本
+  if [ -n "$prerelease" ]; then
+    next_prerelease="$major.$minor.$patch-$((prerelease + 1))"
+  else
+    next_prerelease="$major.$minor.$((patch + 1))-0"
+  fi
 
   # 定义选项数组
   options=(
