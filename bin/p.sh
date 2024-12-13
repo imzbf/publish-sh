@@ -96,7 +96,7 @@ read_input() {
           break
       fi
 
-      clear
+      # clear
     done
     # 返回有效输入
     echo "$input"
