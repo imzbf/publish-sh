@@ -5,19 +5,21 @@ select_option() {
   args=("$@")
   len=${#args[@]}
   choices=("${args[@]:0:len-1}")
+  prompt="${args[$len-1]}"
   selectedIndex=0
+  total_lines=$(( ${#choices[@]} + 1 )) # 计算总行数（包括提示）
+
+  # 打印初始内容
+  echo "$prompt"
+  for index in "${!choices[@]}"; do
+    if [ $index -eq $selectedIndex ]; then
+      printf "\033[33m> ${choices[$index]}\e[0m\n"
+    else
+      echo "  ${choices[$index]}"
+    fi
+  done
 
   while true; do
-    clear
-    echo ${args[$len-1]}
-    for index in "${!choices[@]}"; do
-      if [ $index -eq $selectedIndex ]; then
-        printf "\033[33m> ${choices[$index]}\e[0m\n"
-      else
-        echo "  ${choices[$index]}"
-      fi
-    done
-
     read -n1 -s key
 
     case "$key" in
@@ -36,12 +38,33 @@ select_option() {
         fi
         ;;
       "")  # 回车键
+        selected_option="${choices[$selectedIndex]}"
         break
         ;;
     esac
+
+    # 更新选择器部分内容
+    for (( i=0; i<total_lines; i++ )); do
+      printf "\033[1A\033[2K"  # 上移光标并清空行
+    done
+
+    echo "$prompt"
+    for index in "${!choices[@]}"; do
+      if [ $index -eq $selectedIndex ]; then
+        printf "\033[33m> ${choices[$index]}\e[0m\n"
+      else
+        echo "  ${choices[$index]}"
+      fi
+    done
   done
 
-  selected_option="${choices[$selectedIndex]}"
+  # 清除所有先前的选择提示和内容
+  for (( i=0; i<total_lines; i++ )); do
+    printf "\033[1A\033[2K"  # 上移光标并清空行
+  done
+
+  # 输出选择的结果
+  echo "你的选择结果: $selected_option"
 }
 
 # 获取本地分支列表
