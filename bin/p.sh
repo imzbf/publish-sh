@@ -10,7 +10,7 @@ select_option() {
   total_lines=$(( ${#choices[@]} + 1 )) # 计算总行数（包括提示）
 
   # 打印初始内容
-  echo "$prompt"
+  echo -e "\033[33m$prompt\033[0m"
   for index in "${!choices[@]}"; do
     if [ $index -eq $selectedIndex ]; then
       printf "\033[33m> ${choices[$index]}\e[0m\n"
@@ -48,7 +48,7 @@ select_option() {
       printf "\033[1A\033[2K"  # 上移光标并清空行
     done
 
-    echo "$prompt"
+    echo -e "\033[33m$prompt\033[0m"
     for index in "${!choices[@]}"; do
       if [ $index -eq $selectedIndex ]; then
         printf "\033[33m> ${choices[$index]}\e[0m\n"
@@ -64,7 +64,7 @@ select_option() {
   done
 
   # 输出选择的结果
-  echo "你的选择结果: $selected_option"
+  echo -e "\033[33m你的选择结果:\033[0m $selected_option"
 }
 
 # 获取本地分支列表
@@ -89,7 +89,7 @@ while true; do
 
   # 检查是否有未提交的文件或更改
   if [ -n "$status" ]; then
-    echo "存在未提交的文件或更改："
+    echo -e "\033[33m存在未提交的文件或更改：\033[0m"
     echo "$status"
     
     git add .
@@ -100,14 +100,14 @@ while true; do
 done
 
 git checkout $develop_branch
-echo "拉取远程 $develop_branch 分支"
+echo -e "\033[33m拉取远程 $develop_branch 分支\033[0m"
 git pull origin $develop_branch
 
 git checkout $publish_branch
 
-echo "拉取远程${publish_branch}分支"
+echo -e "\033[33m拉取远程 $publish_branch 分支\033[0m"
 git pull origin $publish_branch
-echo "合并 $develop_branch 分支"
+echo -e "\033[33m合并 $develop_branch 分支\033[0m"
 git merge $develop_branch
 
 read_input() {
@@ -186,7 +186,7 @@ if [ $create_tag != "n" ]; then
   git checkout $develop_branch
 
   if [ $needMerge == true ]; then
-    echo "将${publish_branch}合并回 $develop_branch "
+    echo -e "\033[33m将${publish_branch}合并回 $develop_branch\033[0m"
     git merge $publish_branch
   fi
 
@@ -198,7 +198,7 @@ if [ $create_tag != "n" ]; then
   select_option "${options[@]}" "是否推送tag"
   push_tag="$selected_option"
 
-  echo "推送代码"
+  echo -e "\033[33m推送代码\033[0m"
   if [ $push_tag == "是" ]; then
     git push origin $version $publish_branch $develop_branch
   else
@@ -216,11 +216,11 @@ else
   merge_back="$selected_option"
 
   if [ $merge_back == "是" ]; then
-    echo "将${publish_branch}合并回 $develop_branch "
+    echo -e "\033[33m将${publish_branch}合并回 $develop_branch\033[0m"
     git merge $publish_branch
   fi
 
-  echo "推送代码"
+  echo -e "\033[33m推送代码\033[0m"
   git push origin $publish_branch $develop_branch
 fi
 
