@@ -110,6 +110,22 @@ git pull origin $publish_branch
 echo -e "\033[33m合并 $develop_branch 分支\033[0m"
 git merge $develop_branch
 
+# 检测合并的内容是否冲突
+while true; do
+  # 获取当前目录的Git状态
+  status=$(git status --porcelain)
+
+  # 检查是否有未提交的文件或更改
+  if [ -n "$status" ]; then
+    echo -e "\033[33m合并后存在未提交的文件：\033[0m"
+    echo "$status"
+    
+    read -p "请处理后回车继续："
+  else
+    break
+  fi
+done
+
 read_input() {
     local input
     while :; do
