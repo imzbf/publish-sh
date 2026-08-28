@@ -5,7 +5,11 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
+  "files": [
+    "bin/p.sh",
+    "README.md"
+  ],
   "bin": {
-    "pb": "./bin/p.sh"
+    "pb": "bin/p.sh"
   }
 }

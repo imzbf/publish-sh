@@ -1,0 +1,38 @@
+name: Npm Publish
+
+on:
+  push:
+    branches: [beta]
+    tags:
+      - v*
+
+# npm trusted publishing 使用此工作流的 OIDC 身份换取短期发布凭证，
+# 不再需要长期有效的 NPM_TOKEN。
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish npm package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      # npm trusted publishing 依赖新版 npm，通过 setup-node 固定运行时并配置 npm registry。
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          registry-url: https://registry.npmjs.org/
+
+      # npm trust 为每个包限制一个受信任工作流，因此将两个发布渠道放在这里，
+      # 再根据触发来源的标签或分支决定 npm 发布标签。
+      - name: Publish latest
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        run: npm publish --access public
+
+      - name: Publish beta
+        if: github.event_name == 'push' && github.ref == 'refs/heads/beta'
+        run: npm publish --access public --tag beta
